@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Recognition</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <h3 style="text-align: center;">Upload the Currency Note Image</h3>
+    </div>
+    <div class="file-upload">
+        <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">
+            Upload
+        </button>
+
+        <div class="image-upload-wrap">
+            <input class="file-upload-input" type='file' onchange="readURL(this);" accept="image/*" />
+            <div class="drag-text">
+                <h3>Drag and drop a file or select add Image</h3>
+            </div>
+        </div>
+        <div class="file-upload-content">
+            <img class="file-upload-image" src="#" alt="your image" />
+            <div class="image-title-wrap">
+                <button type="button" onclick="removeUpload()" class="remove-image">Remove <span
+                        class="image-title">Uploaded Image</span></button>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center;">
+        <button class="file-submit-btn" type="button" style="width: 10%;" onclick="submitImage()">
+            Submit
+        </button>
+    </div>
+    <div id="response-container" class="text-center mt-4" style="width: 20%; margin:auto">
+
+    </div>
+</body>
+
+</html>
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('.image-upload-wrap').hide();
+
+                $('.file-upload-image').attr('src', e.target.result);
+                $('.file-upload-content').show();
+
+                $('.image-title').html(input.files[0].name);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+
+        } else {
+            removeUpload();
+        }
+    }
+
+    function removeUpload() {
+        $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+        $('.file-upload-content').hide();
+        $('.image-upload-wrap').show();
+    }
+    $('.image-upload-wrap').bind('dragover', function () {
+        $('.image-upload-wrap').addClass('image-dropping');
+    });
+    $('.image-upload-wrap').bind('dragleave', function () {
+        $('.image-upload-wrap').removeClass('image-dropping');
+    });
+
+    function submitImage() {
+        var fileInput = $('.file-upload-input')[0].files[0];
+        var formData = new FormData();
+        formData.append('file', fileInput);
+
+        $.ajax({
+            type: 'POST',
+            url: '/uploadImage',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                // Handle success response
+                console.log(response);
+                displayResponse(response);
+            },
+            error: function (xhr, status, error) {
+                // Handle error response
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function displayResponse(response) {
+        var responseContainer = document.getElementById('response-container');
+        responseContainer.innerHTML = '';
+        var denomination = response.denomination;
+        console.log(denomination)
+        var responseDiv = document.createElement('div');
+        responseDiv.className = 'alert alert-info';
+        responseDiv.innerHTML = `Denomination: Rs.${denomination}`;
+        responseContainer.appendChild(responseDiv);
+    }
+</script>
